@@ -1,0 +1,8 @@
+include src/CircCode3/resources/*
+include src/CircCode3/resources/stop_codon_model/*
+include src/CircCode3/resources/DeepCircm6A/*
+include src/CircCode3/deep_learning/IRESfinder_final/examples/*
+include src/CircCode3/deep_learning/IRESfinder_final/dataset/*
+include src/CircCode3/deep_learning/IRESfinder_final/module/*
+
+exclude test/*
