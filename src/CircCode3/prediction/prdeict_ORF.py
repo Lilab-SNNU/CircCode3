@@ -124,7 +124,7 @@ def read_coding_peptide(table_file: str) -> dict[str, Any]:
     """
     peptide_site = {}
     with open(table_file) as fi:
-        for line in fi.readlines()[1:]:
+        for line in fi.readlines():
             li = line.strip().split("\t")
             name = li[0].split("_", 1)[1]
             value = peptide_site.get(name, [])
