@@ -26,7 +26,7 @@ class DrawCirc:
         self.DRAW = ImageDraw.Draw(self.myseq)
         self.CENTER = (2500, 3000)                      # 弧形的中心
         self.dpi = (300, 300)
-        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', 150)
+        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', 130)
 
 
     def get_angle(self, bp: int, length: int) -> float:
