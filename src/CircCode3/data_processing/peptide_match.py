@@ -44,9 +44,11 @@ def mapping_to_junction(junction, remove_peptide, peptide_file):
         dict_junction[Seq.id] = Seq.seq
     table = {}
     with open(remove_peptide) as fi:
-        for line in fi.readlines()[1:]:
+        for line in fi.readlines():
             li = line.strip().split("\t")
             peptide = li[0]
+            if peptide.startswith("r"):
+                continue
             circRNA = li[1].split("/")
             num = int(li[2])
             for name in circRNA:
