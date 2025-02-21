@@ -7,7 +7,6 @@ from Bio import SeqIO
 from multiprocessing import Value
 from PIL import Image, ImageDraw, ImageFont
 
-
 from ..utils.logs import logger
 from ..utils.path_utils import *
 
@@ -27,7 +26,8 @@ class DrawCirc:
         self.DRAW = ImageDraw.Draw(self.myseq)
         self.CENTER = (2500, 3000)                      # 弧形的中心
         self.dpi = (300, 300)
-        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', 100)
+        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', 150)
+
 
     def get_angle(self, bp: int, length: int) -> float:
         """
@@ -129,7 +129,7 @@ class DrawCirc:
         :return:
         """
         self.DRAW.rectangle(site, fill=color1)
-        self.DRAW.text((site[0] + 300, site[1]), text, fill=color2, font=self.arial100)
+        self.DRAW.text((site[0] + 300, site[1]-50), text, fill=color2, font=self.arial100)
 
     def draw_seq_text(self, i: int, base: str, color: str, length: int, radius: float):
         """
@@ -214,7 +214,9 @@ class DrawCircrna(DrawCirc):
         Draw the entire sequence as a circle with one notch (2 degrees).
         :return:
         """
-        self.draw_circle(1450, 1500, -89, 269, self.color[6], "white")  # 3
+        self.draw_circle(1450, 1500, -89, 269, self.color[6], "white") 
+        self.draw_circle(1450, 1500, -91, -89, "black", "white")
+
 
     def draw_reads(self, reads_site: tuple[int]):
         """
@@ -231,25 +233,24 @@ class DrawCircrna(DrawCirc):
         Draw legend
         :return:
         """
-        self.draw_legend((3200, 300, 3400, 400), "CircRNA Sequence", self.color[6], "black")
-        self.draw_legend((3200, 500, 3400, 600), "ORF Sequence", self.color[4], "black")
-        self.draw_legend((3200, 700, 3400, 800), f"IRES Score : {self.ires_score}", self.color[1], "black")
-        self.draw_legend((3200, 900, 3400, 1000), f"m6A Site Count : {self.m6a_score}", self.color[2], "black")
-        self.draw_legend((3200, 1100, 3400, 1200), "Translation Support  Sequence", self.color[0], "black")
+        self.draw_legend((200, 100, 400, 200), "Sequences that cross the BSJ", self.color[0], "black")
+        self.draw_legend((200, 300, 400, 400), "ORF Sequence", self.color[4], "black")
+        self.draw_legend((200, 500, 400, 600), "CircRNA Sequence", self.color[6], "black")
+        self.draw_legend((200, 700, 400, 800), f"m6A Site Count : {self.m6a_score}", self.color[2], "black")
+        self.draw_legend((200, 900, 400, 1000), f"IRES Score : {self.ires_score}", self.color[1], "black")
+        self.draw_legend((200, 1100, 400, 1200), f"Termination codon Score: {self.endcodon_score}", "white", "black")
 
     def draw_text(self):
         """
         Draw the text information that needs to be represented
         :return:
         """
-        self.DRAW.text((300,300), f'circRNA_lenth = {self.length}', fill='black', font=self.arial100)
-        self.DRAW.text((300,500), f'ORF_lenth = {self.end-self.start}', fill='black', font=self.arial100)
-        self.DRAW.text((300,700), f'ORF start site : {self.start}', fill='black', font=self.arial100)
-        self.DRAW.text((300,900), f'ORF stop site : {self.end%self.length}', fill='black', font=self.arial100)
-        self.DRAW.text((300,1100), f'reads count : {self.reads_count}', fill='black', font=self.arial100)
-        # 标注3‘ 和5’ 在序列绘制那，会影响其他圈绘制
-        self.DRAW.text((2420, 1400), "3'", fill='black', font=self.arial100)
-        self.DRAW.text((2540, 1400), "5'", fill='black', font=self.arial100)
+        self.DRAW.text((3200,100), f'circRNA_lenth = {self.length}', fill='black', font=self.arial100)
+        self.DRAW.text((3200,300), f'ORF_lenth = {self.end-self.start}', fill='black', font=self.arial100)
+        self.DRAW.text((3200,500), f'ORF start site : {self.start}', fill='black', font=self.arial100)
+        self.DRAW.text((3200,700), f'ORF stop site : {self.end%self.length}', fill='black', font=self.arial100)
+        self.DRAW.text((3200,900), f'Sequence count : {self.reads_count}', fill='black', font=self.arial100)
+        self.DRAW.text((2370, 1530), "BSJ", fill='black', font=self.arial100)
 
 
 class DrawTextCircrna(DrawCirc):
@@ -264,16 +265,14 @@ class DrawTextCircrna(DrawCirc):
         self.length = length
         self.sequence = sequence
         self.color = ("#002c53", "#ff6600", "#00994e", "#e30039", "#ffc000", "#99cc00", "#D8E6E7")
-        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', int(10000 / length))
+        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', max(int(10000 / length), 1))
 
     def draw_sequence(self):
         """
         Draw the full sequence, leaving a gap so the first base is not shown.
-        :return:
+        :return: None
         """
-        self.draw_circle_text(self.sequence, 1, self.length, 1700, self.length, self.color[6])
-        self.draw_circle(1700-int(10000/self.length), 1700, -90, -90+(100/self.length), self.color[6], "white")
-
+        self.draw_circle_text(self.sequence, 0, self.length, 1700, self.length, self.color[6])
 
     def draw_orf_text(self, translate_sequence: str):
         """
@@ -328,13 +327,22 @@ class DrawTextCircrna(DrawCirc):
         """
         Draw legend
         """
-        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', 100)
-        self.draw_legend((200, 300, 300, 400), "Translation Support Sequence", self.color[0], "black")
-        self.draw_legend((200, 500, 300, 600), "ORF Sequence", self.color[4], "black")
-        self.draw_legend((200, 700, 300, 800), "IRES Sequence", self.color[3], "black")
-        self.draw_legend((200, 900, 300, 1000), "m6A Modification Sites", self.color[2], "black")
-        self.draw_legend((200, 1100, 300, 1200), "Translate Sequence", self.color[5], "black")
-        self.draw_legend((200, 1300, 300, 1400), "CircRNA Sequence", self.color[6], "black")
+        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', 130)
+
+        self.draw_legend((200, 100, 300, 200), "Sequences that cross the BSJ", self.color[0], "black")
+        self.draw_legend((200, 300, 300, 400), "Translated sequences from orfs", self.color[5], "black")
+        self.draw_legend((200, 500, 300, 600), "IRES Sequence", self.color[3], "black")
+        self.draw_legend((200, 700, 300, 800), "m6A Modification Sites", self.color[2], "black")
+        self.draw_legend((200, 900, 300, 1000), "ORF Sequence", self.color[4], "black")
+        self.draw_legend((200, 1100, 300, 1200), "CircRNA Sequence", self.color[6], "black")
+    
+    def draw_bsj_split(self):
+        # 定义直线的起点和终点坐标
+        start_position = self.coord(-90, self.CENTER, 1600)  
+        end_position = self.coord(-90, self.CENTER, 1950)  
+        self.DRAW.line([start_position, end_position], fill="black", width=max(int(1000 / self.length), 1))
+        for i, b in enumerate("BSJ"):
+            self.draw_seq_text(i-1, b, "black", self.length, 2100)
 
 
 def MS_liner_circ_picture(orf_info_path: str, dict_m6a: dict[str, list[int]], dict_sequence: dict[str, str], outfile: str, threads: int, filter_flag: bool):
@@ -377,7 +385,6 @@ def MS_liner_circ_picture(orf_info_path: str, dict_m6a: dict[str, list[int]], di
 
 
 
-
 def ms_draw_liner_picture(name: str, start: int, end: int, length: int, ires_score: float, m6a_score: float, endcodon_score: float, reads_num: int, peptide_site: tuple[int], m6a_site: list[int], outresult: str, total_number: int):
     """
     The drawing is separate for multiprocess encapsulation
@@ -395,21 +402,24 @@ def ms_draw_liner_picture(name: str, start: int, end: int, length: int, ires_sco
     :param total_number:
     :return:
     """
-    draw = DrawCircrna(name, start, end, length, ires_score, m6a_score, endcodon_score, reads_num)
-    outname = name + f"-({start},{end})"
-    name = name + f"|({start},{end})"
-    draw.draw_reads(peptide_site)
-    draw.draw_ires_circ()
-    draw.draw_seq()
-    draw.draw_m6a_circ(m6a_site)
-    draw.draw_orf_circ()
-    draw.draw_legends()
-    draw.draw_text()
-    draw.DRAW.text((500, 4700), name, fill='black', font=draw.arial100)
-    draw.myseq.save('{}/{}.pdf'.format(outresult, outname), "PDF", dpi=draw.dpi)
+    try:
+        draw = DrawCircrna(name, start, end, length, ires_score, m6a_score, endcodon_score, reads_num)
+        outname = name + f"-({start},{end})"
+        name = name + f"|({start},{end})"
+        draw.draw_reads(peptide_site)
+        draw.draw_ires_circ()
+        draw.draw_seq()
+        draw.draw_m6a_circ(m6a_site)
+        draw.draw_orf_circ()
+        draw.draw_legends()
+        draw.draw_text()
+        draw.DRAW.text((500, 4700), name, fill='black', font=draw.arial100)
+        draw.myseq.save('{}/{}.pdf'.format(outresult, outname), "PDF", dpi=draw.dpi)
 
-    num.value += 1
-    print("\r", "{:.2f}%".format(round(num.value*100/total_number, 2)), end="", flush=True)
+        num.value += 1
+        print("\r", "{:.2f}%".format(round(num.value*100/total_number, 2)), end="", flush=True)
+    except Exception as e:
+        raise DrawError(f"draw failed for name={name}: {e}")
 
 
 def Ribo_liner_circ_picture(orf_info_path, dict_m6a, dict_sequence, outfile, threads, filter_flag):
@@ -471,21 +481,23 @@ def ribo_draw_liner_picture(name: str, start: int, end: int, length: int, ires_s
     :param total_number:
     :return:
     """
-    draw = DrawCircrna(name, start, end, length, ires_score, m6a_score, endcodon_score, reads_num)
-    outname = name + f"-({start},{end})"
-    name = name + f"|({start},{end})"
-    draw.draw_reads(reads_site)
-    draw.draw_ires_circ()
-    draw.draw_seq()
-    draw.draw_m6a_circ(m6a_site)
-    draw.draw_orf_circ()
-    draw.draw_legends()
-    draw.draw_text()
-    draw.DRAW.text((500, 4700), name, fill='black', font=draw.arial100)
-
-    draw.myseq.save('{}/{}.pdf'.format(outresult, outname), "PDF", dpi=draw.dpi)
-    num.value += 1
-    print("\r", "{:.2f}%".format(round(num.value*100/total_number, 2)), end="", flush=True)
+    try:
+        draw = DrawCircrna(name, start, end, length, ires_score, m6a_score, endcodon_score, reads_num)
+        outname = name + f"-({start},{end})"
+        name = name + f"|({start},{end})"
+        draw.draw_reads(reads_site)
+        draw.draw_ires_circ()
+        draw.draw_seq()
+        draw.draw_m6a_circ(m6a_site)
+        draw.draw_orf_circ()
+        draw.draw_legends()
+        draw.draw_text()
+        draw.DRAW.text((500, 4700), name, fill='black', font=draw.arial100)
+        draw.myseq.save('{}/{}.pdf'.format(outresult, outname), "PDF", dpi=draw.dpi)
+        num.value += 1
+        print("\r", "{:.2f}%".format(round(num.value*100/total_number, 2)), end="", flush=True)
+    except Exception as e:
+        raise DrawError(f"draw failed for name:{name} {e}")
 
 
 def sequence_dict(sequence: str) -> dict[str, str]:
@@ -566,19 +578,23 @@ def MS_text_circ_picture(orf_info_path, dict_m6a, dict_sequence, outfile, thread
 
 
 def ms_draw_text_picture(name, start, end, sequence, length, corf, m6a_site, peptide_site, peptide, outfile, total_number):
-    draw = DrawTextCircrna(name, start, end, sequence, length)
-    outname = name + f"-({start},{end})"
-    draw.draw_sequence()
-    draw.draw_orf_text(corf)
-    draw.draw_ires_text()
-    draw.draw_m6a_text(m6a_site)
-    draw.draw_peptide_text(peptide_site, peptide)
-    draw.draw_legends()
-    draw.myseq.save('{}/{}.pdf'.format(outfile, outname), "PDF", dpi=draw.dpi)
+    try:
+        draw = DrawTextCircrna(name, start, end, sequence, length)
+        outname = name + f"-({start},{end})"
+        draw.draw_sequence()
+        draw.draw_orf_text(corf)
+        draw.draw_ires_text()
+        draw.draw_m6a_text(m6a_site)
+        draw.draw_peptide_text(peptide_site, peptide)
+        draw.draw_bsj_split()
+        draw.draw_legends()
+        draw.DRAW.text((500, 4800), name, fill='black', font=draw.arial100)
+        draw.myseq.save('{}/{}.pdf'.format(outfile, outname), "PDF", dpi=draw.dpi)
 
-    num.value += 1
-    print("\r", "{:.2f}%".format(round(num.value*100/total_number, 2)), end="", flush=True)
-
+        num.value += 1
+        print("\r", "{:.2f}%".format(round(num.value*100/total_number, 2)), end="", flush=True)
+    except Exception as e:
+        raise DrawError(f"draw failed for name:{name} {e}")
 
 def Ribo_text_circ_picture(orf_info_path, dict_m6a, dict_sequence, outfile, threads, filter_flag):
     """
@@ -619,17 +635,22 @@ def Ribo_text_circ_picture(orf_info_path, dict_m6a, dict_sequence, outfile, thre
 
 
 def ribo_draw_text_picture(name, start, end, sequence, length, corf, m6a_site, reads_site, outfile, total_number):
-    draw = DrawTextCircrna(name, start, end, sequence, length)
-    outname = name + f"-({start},{end})"
-    draw.draw_sequence()
-    draw.draw_orf_text(corf)
-    draw.draw_ires_text()
-    draw.draw_m6a_text(m6a_site)
-    draw.draw_reads_text(reads_site)
-    draw.draw_legends()
-    draw.myseq.save('{}/{}.pdf'.format(outfile, outname), "PDF", dpi=draw.dpi)
-    num.value += 1
-    print("\r", "{:.2f}%".format(round(num.value*100/total_number, 2)), end="", flush=True)
+    try:
+        draw = DrawTextCircrna(name, start, end, sequence, length)
+        outname = name + f"-({start},{end})"
+        draw.draw_sequence()
+        draw.draw_orf_text(corf)
+        draw.draw_ires_text()
+        draw.draw_m6a_text(m6a_site)
+        draw.draw_reads_text(reads_site)
+        draw.draw_bsj_split()
+        draw.draw_legends()
+        draw.DRAW.text((500, 4800), name, fill='black', font=draw.arial100)
+        draw.myseq.save('{}/{}.pdf'.format(outfile, outname), "PDF", dpi=draw.dpi)
+        num.value += 1
+        print("\r", "{:.2f}%".format(round(num.value*100/total_number, 2)), end="", flush=True)
+    except Exception as e:
+        raise DrawError(f"draw failed for name:{name} {e}")
 
 
 def MS_draw_circ(draw_path:PathManager, threads, filter_flag=False):
@@ -691,6 +712,11 @@ def Ribo_draw_circ(draw_path:PathManager, threads, filter_flag=False):
     logger.info("Draw the text graph")
     Ribo_text_circ_picture(orf_info_path, dict_m6a, dict_sequence, Ribo_Text_graph, threads, filter_flag)
     logger.info("Visual image drawing completed")
+
+
+class DrawError(Exception):
+    def __init__(self, *args):
+        super().__init__(*args)
 
 
 def error_break(err):
