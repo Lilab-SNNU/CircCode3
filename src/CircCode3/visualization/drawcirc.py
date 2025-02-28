@@ -26,7 +26,7 @@ class DrawCirc:
         self.DRAW = ImageDraw.Draw(self.myseq)
         self.CENTER = (2500, 3000)                      # 弧形的中心
         self.dpi = (300, 300)
-        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', 130)
+        self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', 150)
 
 
     def get_angle(self, bp: int, length: int) -> float:
@@ -234,7 +234,7 @@ class DrawCircrna(DrawCirc):
         :return:
         """
         self.draw_legend((200, 100, 400, 200), "Sequences that cross the BSJ", self.color[0], "black")
-        self.draw_legend((200, 300, 400, 400), "ORF Sequence", self.color[4], "black")
+        self.draw_legend((200, 300, 400, 400), "cORF Sequence", self.color[4], "black")
         self.draw_legend((200, 500, 400, 600), "CircRNA Sequence", self.color[6], "black")
         self.draw_legend((200, 700, 400, 800), f"m6A Site Count : {self.m6a_score}", self.color[2], "black")
         self.draw_legend((200, 900, 400, 1000), f"IRES Score : {self.ires_score}", self.color[1], "black")
@@ -246,9 +246,9 @@ class DrawCircrna(DrawCirc):
         :return:
         """
         self.DRAW.text((3200,100), f'circRNA_lenth = {self.length}', fill='black', font=self.arial100)
-        self.DRAW.text((3200,300), f'ORF_lenth = {self.end-self.start}', fill='black', font=self.arial100)
-        self.DRAW.text((3200,500), f'ORF start site : {self.start}', fill='black', font=self.arial100)
-        self.DRAW.text((3200,700), f'ORF stop site : {self.end%self.length}', fill='black', font=self.arial100)
+        self.DRAW.text((3200,300), f'cORF_lenth = {self.end-self.start}', fill='black', font=self.arial100)
+        self.DRAW.text((3200,500), f'cORF start site : {self.start}', fill='black', font=self.arial100)
+        self.DRAW.text((3200,700), f'cORF stop site : {self.end%self.length}', fill='black', font=self.arial100)
         self.DRAW.text((3200,900), f'Sequence count : {self.reads_count}', fill='black', font=self.arial100)
         self.DRAW.text((2370, 1530), "BSJ", fill='black', font=self.arial100)
 
@@ -330,10 +330,10 @@ class DrawTextCircrna(DrawCirc):
         self.arial100 = ImageFont.truetype('src/resources/LiberationSans-Regular.ttf', 130)
 
         self.draw_legend((200, 100, 300, 200), "Sequences that cross the BSJ", self.color[0], "black")
-        self.draw_legend((200, 300, 300, 400), "Translated sequences from orfs", self.color[5], "black")
+        self.draw_legend((200, 300, 300, 400), "Translation protein from cORF", self.color[5], "black")
         self.draw_legend((200, 500, 300, 600), "IRES Sequence", self.color[3], "black")
         self.draw_legend((200, 700, 300, 800), "m6A Modification Sites", self.color[2], "black")
-        self.draw_legend((200, 900, 300, 1000), "ORF Sequence", self.color[4], "black")
+        self.draw_legend((200, 900, 300, 1000), "cORF Sequence", self.color[4], "black")
         self.draw_legend((200, 1100, 300, 1200), "CircRNA Sequence", self.color[6], "black")
     
     def draw_bsj_split(self):
