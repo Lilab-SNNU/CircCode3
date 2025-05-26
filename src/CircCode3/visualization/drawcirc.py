@@ -245,8 +245,8 @@ class DrawCircrna(DrawCirc):
         Draw the text information that needs to be represented
         :return:
         """
-        self.DRAW.text((3200,100), f'circRNA_lenth = {self.length}', fill='black', font=self.arial100)
-        self.DRAW.text((3200,300), f'cORF_lenth = {self.end-self.start}', fill='black', font=self.arial100)
+        self.DRAW.text((3200,100), f'circRNA_length = {self.length}', fill='black', font=self.arial100)
+        self.DRAW.text((3200,300), f'cORF_length = {self.end-self.start}', fill='black', font=self.arial100)
         self.DRAW.text((3200,500), f'cORF start site : {self.start}', fill='black', font=self.arial100)
         self.DRAW.text((3200,700), f'cORF stop site : {self.end%self.length}', fill='black', font=self.arial100)
         self.DRAW.text((3200,900), f'Sequence count : {self.reads_count}', fill='black', font=self.arial100)

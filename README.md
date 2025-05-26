@@ -75,7 +75,7 @@ Attention: Before you begin to use this package, you need to make sure that you 
 For Ribo seq data, you can use a one-stop command:
 
 ```
-CircCode3.py Ribo [-h] (-S SINGLE | -P PAIRED PAIRED) [-g TRANSCRIPT] [-r RIBOSOME] [-c CIRCRNA] [-t THREADS] [-o OUTPUT] [--draw_visualization {All,None,Longest}] [--retain_temp_file {True,False}]
+CircCode3 Ribo [-h] (-S SINGLE | -P PAIRED PAIRED) [-g TRANSCRIPT] [-r RIBOSOME] [-c CIRCRNA] [-t THREADS] [-o OUTPUT] [--draw_visualization {All,None,Longest}] [--retain_temp_file {True,False}]
 ```
 
 | parameter              | description                                                                             | file format | default |
