@@ -250,15 +250,27 @@ def end_codon_extract(sequence: str, site: tuple[int, int]) -> str:
     return sequence[site[1]-51: site[1]+54]
 
 
-def read_orf_info(path: str) -> list[list]:
+def read_orf_info(path: str) -> List[tuple[str, int, int]]:
     """
-    Extract the orf info from orf_info file
-    :param path: path of xxx_frag_ORF_info.xlsx
-    :return: info list
+    Extract the ORF info from ORF_info file.
+    
+    :param path: Path to the xxx_frag_ORF_info.xlsx file
+    :return: List of tuples in the form (circRNA_name: str, ORF_Start: int, ORF_Stop: int)
     """
-    data_table = pd.read_excel(path)
-    info = data_table[["circRNA_name", "ORF_Start", "ORF_Stop"]]
-    return info.values.tolist()
+    data_table = pd.read_excel(
+        path,
+        dtype={"circRNA_name": str}  # 强制转换为字符串类型
+    )
+
+    # 可选：去除前后空格
+    data_table["circRNA_name"] = data_table["circRNA_name"].str.strip()
+
+    # 确保 Start/Stop 是整数
+    data_table["ORF_Start"] = data_table["ORF_Start"].fillna(0).astype(int)
+    data_table["ORF_Stop"] = data_table["ORF_Stop"].fillna(0).astype(int)
+
+    # 返回元组列表
+    return [tuple(row) for row in data_table[["circRNA_name", "ORF_Start", "ORF_Stop"]].values]
 
 
 def read_sequence(path: str):
@@ -322,19 +334,23 @@ def sequence_extract(orf_info_path: PathManager, threads: int) -> tuple[str, str
     index, sequence = read_sequence(true_circRNA)
 
     logger.info("Extract ORF information sequence.")
-    with ProcessPoolExecutor(max_workers=threads) as executor:
-        executor.submit(sequence_operation,
-                        orf_info, sequence, index, IRES_sequence,
-                        upstream_seq_extract)
-        executor.submit(sequence_operation,
-                        orf_info, sequence, index, m6A_sequence,
-                        upstream_m6a_seq_extract)
-        executor.submit(sequence_operation,
-                        orf_info, sequence, index, orf_sequence,
-                        orf_seq_extract)
-        executor.submit(sequence_operation,
-                        orf_info, sequence, index, termination_codon_sequence,
-                        end_codon_extract)
+    # 动态调整进程池大小
+    max_workers = min(threads, 4)  # 限制不超过 CPU 核心数
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        # 提交任务
+        futures = [
+            executor.submit(sequence_operation, orf_info, sequence, index, IRES_sequence, upstream_seq_extract),
+            executor.submit(sequence_operation, orf_info, sequence, index, m6A_sequence, upstream_m6a_seq_extract),
+            executor.submit(sequence_operation, orf_info, sequence, index, orf_sequence, orf_seq_extract),
+            executor.submit(sequence_operation, orf_info, sequence, index, termination_codon_sequence, end_codon_extract),
+        ]
+    # 等待所有任务完成并捕获异常
+    for future in futures:
+        try:
+            future.result()  # 主动触发异常
+        except Exception as e:
+            logger.error(f"Task failed with error: {e}")
+            raise
 
     return IRES_sequence, m6A_sequence, orf_sequence, termination_codon_sequence
 
